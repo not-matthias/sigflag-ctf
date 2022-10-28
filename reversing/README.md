@@ -1,5 +1,12 @@
 # Reversing
 
+
+## Flags
+
+1. TODO
+2. SIG{dyn4mlc_4n4ly5l5}
+3. 
+
 ## IDA
 
 Use: https://github.com/NyaMisty/docker-wine-ida
