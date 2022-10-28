@@ -6,5 +6,9 @@ pkgs.mkShell {
     file
     binwalk
     steam-run
+    python39Packages.pip
+    python39Packages.angr
+    python39Packages.pwntools
+    pwntools
   ];
 }

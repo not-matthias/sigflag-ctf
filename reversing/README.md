@@ -3,7 +3,7 @@
 
 ## Flags
 
-1. TODO
+1. SIG{r3v3rs1ng_1s_fun}
 2. SIG{dyn4mlc_4n4ly5l5}
 3. 
 
