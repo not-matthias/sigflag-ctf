@@ -11,3 +11,14 @@ Common Vulnerabilities
 - popular secrets: secret, SECRET, admin, defaults copied from docs
 - error handler/logging leaks data
 - ssrf
+# Web
+
+## Potential challs
+
+- Access data: User id in parameter iteraten
+- Dev Endpoint -> Obscure url, Proxy Endpoint
+- Bad JWT / Cookie encryption
+  - Might need to generate own tokens
+- Serialization injection
+- Leak exception
+- Access files
