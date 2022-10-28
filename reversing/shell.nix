@@ -5,5 +5,6 @@ pkgs.mkShell {
     binutils
     file
     binwalk
+    steam-run
   ];
 }

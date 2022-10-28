@@ -2,7 +2,7 @@
 import angr
 
 p = angr.Project("level3")
-good = 0x0012a1
+good = 0x01012a1
 bad = 0x001012a
 
 sm = p.factory.simulation_manager()
