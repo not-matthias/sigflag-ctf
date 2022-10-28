@@ -1,1 +1,3 @@
 # sigflag-ctf
+
+Flag: `SIG{...}`
