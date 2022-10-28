@@ -14,3 +14,14 @@ Common Vulnerabilities
 
 Tools
 - Swagger
+# Web
+
+## Potential challs
+
+- Access data: User id in parameter iteraten
+- Dev Endpoint -> Obscure url, Proxy Endpoint
+- Bad JWT / Cookie encryption
+  - Might need to generate own tokens
+- Serialization injection
+- Leak exception
+- Access files
