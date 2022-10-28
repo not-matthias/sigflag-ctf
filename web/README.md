@@ -11,3 +11,6 @@ Common Vulnerabilities
 - popular secrets: secret, SECRET, admin, defaults copied from docs
 - error handler/logging leaks data
 - ssrf
+
+Tools
+- Swagger
