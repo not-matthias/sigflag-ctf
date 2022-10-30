@@ -172,20 +172,14 @@ Sat Jan 1 15:01:00 2000 +0100`;
 
 const result = [];
 for(let i = 0; i<60; ++i) {
-    result[i] = [...new Array(60)].fill(0);
+    result[i] = [...new Array(60)].fill(" ");
 }
 
 const times = input.replace(/Sat Jan 1 /gi, "").replace(/:00 2000 \+0100/gi, "").split("\n");
 
 for(const time of times) {
     const [hour, minute] = time.split(":").map(t => +t);
-    result[hour - 1][minute - 1] = 1;
+    result[hour][minute] = "■";
 }
 
-
-console.log(result.reverse().map(a => {
-
-    return a.map(b => b ? "X" : " ").join("");
-}).join('\n'))
-
-// console.log(result, times);
+console.log(result.reverse().map(a => a.join("")).join('\n'))
