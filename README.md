@@ -540,4 +540,12 @@ if you assign the dark squares of the poster `1` and the light squares `0`, then
 
 the certificate can be parsed with CyberChef:
 
-![certificate in cyberchef](./wireshark-wireshark-2-cyberchef.png)
+![certificate in cyberchef](./wireshark-2-cyberchef.png)
+
+### Wireshark 3
+
+![wireshark 3](./wireshark-3.png)
+
+this string can be parsed with CyberChef:
+
+![string in cyberchef](./wireshark-3-cyberchef.png)
