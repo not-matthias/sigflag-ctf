@@ -534,4 +534,10 @@ if you assign the dark squares of the poster `1` and the light squares `0`, then
 
 ![wireshark 1](./wireshark-1.png)
 
-## AI
+### Wireshark 2
+
+![wireshark 2](./wireshark-2.png)
+
+the certificate can be parsed with CyberChef:
+
+![certificate in cyberchef](./wireshark-wireshark-2-cyberchef.png)
