@@ -335,7 +335,6 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
             ]
         }
     return {"name": username, "pass": password}
-
 ```
 
 ```
@@ -358,7 +357,7 @@ http://game.sigflag.at:3002/userinfo/flag1
 
 ### A9
 
-```
+```python
 @data.get("/crypto")
 async def crypto_guess(
         request: Request, authorize: AuthJWT = Depends(), guess: str = "base64encoded"
@@ -376,7 +375,7 @@ async def crypto_guess(
         )
 ```
 
-```
+```python
 @data.get("/proxy/{path:path}")
 def localproxy(path: str):
     """Yo dawg, I heard you like... <br/> Delayed for ddos protection"""
@@ -384,8 +383,7 @@ def localproxy(path: str):
     return PlainTextResponse(requests.get("http://localhost/" + path).text)
 ```
 
-```
-
+```python
 @app.exception_handler(Exception)
 def general_exception_handler(req: Request, exc: Exception):
     """For debugging, local users should get a full stack trace"""
@@ -403,6 +401,48 @@ http://game.sigflag.at:3002/proxy/crypto
 ```
 
 ### A10
+
+```python
+users = DefaultDict(
+    {
+        "test": "test",
+        "flag1": environ["FLAG1"],
+        "local": environ["FLAG10"],
+        "admin": environ["FLAG5"],
+    }
+)
+```
+
+```python
+@data.get("/proxy/{path:path}")
+def localproxy(path: str):
+    """Yo dawg, I heard you like... <br/> Delayed for ddos protection"""
+    time.sleep(1)
+    return PlainTextResponse(requests.get("http://localhost/" + path).text)
+```
+
+```python
+@data.get("/userinfo/{username}")
+async def userinfo(username: int | str, request: Request, authorize: AuthJWT = Depends()):
+    if username == "admin":
+        authorize.jwt_required()  # protect the admins!
+        if authorize.get_raw_jwt().get("superadmin", False):
+            return {"I thought we disabled this feature": environ["FLAG7"]}
+    if username == "local":
+        if not request.client.host == "127.0.0.1":
+            raise HTTPException(401, "You are not localhost")
+    if not (password := users[username]):
+        return {
+            "Will you stop having an invalid password if I give you a flag?": environ[
+                "FLAG8"
+            ]
+        }
+    return {"name": username, "pass": password}
+```
+
+```
+http://game.sigflag.at:3002/proxy/userinfo/local
+```
 
 ## Misc
 
