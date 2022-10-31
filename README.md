@@ -345,6 +345,33 @@ http://game.sigflag.at:3002/userinfo/flag1
 
 ### A3
 
+log in with user `FLAG3` pw `FLAG3`
+
+```python
+FORBIDDEN = "FLAG3"
+```
+
+```python
+@auth.post("/login")
+async def login(username=Form(), password=Form(), authorize: AuthJWT = Depends()):
+    """Possible users are test, flag1, local, admin"""
+    if users.get(username) != password:
+        return JSONResponse({"msg": "Bad username or password"}, 401)
+    if username == FORBIDDEN:
+        users.pop(FORBIDDEN)
+        return {
+            "This user shouldn't exist, I'll give you a flag to keep it a secret": environ[
+                FORBIDDEN
+            ]
+        }
+    access_token = authorize.create_access_token(
+        subject=username, user_claims={"superadmin": password == "super"}
+    )
+    resp = RedirectResponse("/")
+    authorize.set_access_cookies(access_token, resp)
+    return resp
+```
+
 ### A4
 
 ```python
@@ -372,6 +399,40 @@ http://game.sigflag.at:3002/proxy/proxy/proxy/proxy/proxy/proxy
 ```
 
 ### A5
+
+```python
+users = DefaultDict(
+    {
+        "test": "test",
+        "flag1": environ["FLAG1"],
+        "local": environ["FLAG10"],
+        "admin": environ["FLAG5"],
+    }
+)
+```
+
+```python
+@data.get("/userinfo/{username}")
+async def userinfo(username: int | str, request: Request, authorize: AuthJWT = Depends()):
+    if username == "admin":
+        authorize.jwt_required()  # protect the admins!
+        if authorize.get_raw_jwt().get("superadmin", False):
+            return {"I thought we disabled this feature": environ["FLAG7"]}
+    if username == "local":
+        if not request.client.host == "127.0.0.1":
+            raise HTTPException(401, "You are not localhost")
+    if not (password := users[username]):
+        return {
+            "Will you stop having an invalid password if I give you a flag?": environ[
+                "FLAG8"
+            ]
+        }
+    return {"name": username, "pass": password}
+```
+
+```
+http://game.sigflag.at:3002/userinfo/admin
+```
 
 ### A6
 
