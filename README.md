@@ -530,4 +530,8 @@ if you assign the dark squares of the poster `1` and the light squares `0`, then
 
 ## Forensic
 
+### Wireshark 1
+
+![wireshark 1](./wireshark-1.png)
+
 ## AI
