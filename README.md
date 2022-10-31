@@ -347,6 +347,30 @@ http://game.sigflag.at:3002/userinfo/flag1
 
 ### A4
 
+```python
+@app.middleware("http")
+async def timeout_middleware(request: Request, call_next):
+    """if a user crafts a request that takes >5 secs, abort"""
+    try:
+        return await asyncio.wait_for(call_next(request), timeout=5.0)
+    except asyncio.TimeoutError:
+        return JSONResponse(
+            {"Will you stop DDOSing me for a flag?": environ["FLAG4"]}, status_code=504
+        )
+```
+
+```python
+@data.get("/proxy/{path:path}")
+def localproxy(path: str):
+    """Yo dawg, I heard you like... <br/> Delayed for ddos protection"""
+    time.sleep(1)
+    return PlainTextResponse(requests.get("http://localhost/" + path).text)
+```
+
+```
+http://game.sigflag.at:3002/proxy/proxy/proxy/proxy/proxy/proxy
+```
+
 ### A5
 
 ### A6
