@@ -4,6 +4,190 @@
 
 ## Reversing
 
+### Reversing Noob
+
+We can take a look at all the strings embedded inside the program and then just filter them. 
+```
+$ strings level1 | rg SIG
+SIG{r3v3rs1ng_1s_fun}
+```
+
+### Reversing Trainee
+
+If we try to use `strings` again, we'll just see a format string:
+```
+$ strings level2 | rg SIG
+Correct! The flag is SIG{%s}
+```
+
+If we open the binary in [Ghidra](TODO), we can see the following pseudocode for `main()`:
+```c
+undefined8 main(undefined4 param_1)
+{
+  int iVar1;
+  size_t sVar2;
+  long in_FS_OFFSET;
+  undefined4 local_2c;
+  char local_28 [24];
+  long local_10;
+  
+  local_10 = *(long *)(in_FS_OFFSET + 0x28);
+  local_2c = param_1;
+  setvbuf(stdin,(char *)0x0,2,0);
+  setvbuf(stdout,(char *)0x0,2,0);
+  printf("What is the secret?\n> ");
+  fgets(local_28,0x14,stdin);
+  printf("Got \"%s\"",local_28);
+  sVar2 = strlen(local_28);
+  local_28[sVar2 - 1] = '\0';
+  iVar1 = checkpassword(local_28);
+  if (iVar1 == 1) {
+    printf("Correct! The flag is SIG{%s}\n",local_28);
+  }
+  else {
+    puts("That was not it!");
+  }
+  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return 0;
+}
+```
+
+As you can see, there's a call to `checkpassword`. Let's go over the pseudocode: 
+- `param_1`: User input
+- `local_28`-`local_18`: Variables defined one after each other on the stack. This is equivalent to an array, but Ghidra doesn't recognize it. By default, these values are just shown as integers, but you can change their type by right clicking and selecting `Char` representation.
+
+```c
+bool checkpassword(char *param_1)
+{
+  int iVar1;
+  long in_FS_OFFSET;
+  char local_28;
+  undefined local_27;
+  undefined local_26;
+  undefined local_25;
+  undefined local_24;
+  undefined local_23;
+  undefined local_22;
+  undefined local_21;
+  undefined local_20;
+  undefined local_1f;
+  undefined local_1e;
+  undefined local_1d;
+  undefined local_1c;
+  undefined local_1b;
+  undefined local_1a;
+  undefined local_19;
+  undefined local_18;
+  long local_10;
+  
+  local_10 = *(long *)(in_FS_OFFSET + 0x28);
+  local_28 = 'd';
+  local_27 = 'y';
+  local_26 = 'n';
+  local_25 = '4';
+  local_24 = 'm';
+  local_23 = '1';
+  local_22 = 'c';
+  local_21 = '_';
+  local_20 = '4';
+  local_1f = 'n';
+  local_1e = '4';
+  local_1d = 'l';
+  local_1c = 'y';
+  local_1b = '5';
+  local_1a = '1';
+  local_19 = '5';
+  local_18 = 0;
+  iVar1 = strcmp(param_1,&local_28);
+  if (local_10 != *(long *)(in_FS_OFFSET + 0x28)) {
+                    /* WARNING: Subroutine does not return */
+    __stack_chk_fail();
+  }
+  return iVar1 == 0;
+}
+```
+
+At the very end, there's a call to `strcmp` which compares the string against our input. Thus, our flag is: `SIG{dyn4m1c_4n4ly515}`
+
+### Reversing Master
+
+Opening the binary in Ghidra again, we can notice that it's quite similar and that there's a `checkpassword` function again. Let's take a look how it's defined (I renamed some of the variables to make it easier to understand):
+
+```c
+bool checkpassword(char *flag)
+{
+  long i;
+  uint diff;
+  
+  i = 0;
+  diff = 0;
+  do {
+    diff = diff | *(uint *)(flag + i) ^ *(uint *)(MAGIC1 + i) ^ *(uint *)(MAGIC2 + i);
+    i = i + 4;
+  } while (i != 16);
+  return diff == 0;
+}
+```
+
+Let's simplify it even more:
+```c
+def solve(flag):
+  for i in range(0, 16):
+    diff |= flag ^ magic1[i] ^ magic2[i]
+
+  return diff == 0
+```
+
+As you may know, XOR (exclusive or) can only return 0 if we have the same value. So we can precompute the magic values, and get the flag:
+
+```python
+magic = [
+    0x67,
+    0x45,
+    0x8B,
+    0x6B,
+    0xC6,
+    0x23,
+    0x7B,
+    0x32,
+    0x69,
+    0x98,
+    0x3C,
+    0x64,
+    0x73,
+    0x48,
+    0x33,
+    0x66,
+]
+
+magic2 = [
+    0x34,
+    0x0C,
+    0xCC,
+    0x10,
+    0xF7,
+    0x10,
+    0x48,
+    0x05,
+    0x36,
+    0xF0,
+    0x08,
+    0x1C,
+    0x0B,
+    0x78,
+    0x41,
+    0x1B,
+]
+
+for i in range(0, len(magic)):
+    print(chr(magic[i] ^ magic2[i]), end="")
+```
+
+This script returns the flag: `SIG{1337_h4xx0r}`
+
 ## PWN
 
 ## Crypto
