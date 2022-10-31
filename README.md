@@ -2,6 +2,77 @@
 
 ## Hardware
 
+### SPI Flash
+
+Easy: SIG{I_READ_THE_INTRO}
+
+###  SPI Flash S01 
+
+```
+$ strings flash.bin | rg SIG
+SIGFLAGMEM FAT16   
+SIGFLAGMEM 
+SIG{S01_FAT_boy_cannot_find_me}
+eSIG
+```
+
+`SIG{S01_FAT_boy_cannot_find_me}`
+
+###  SPI Flash S02 
+
+We can mount the filesystem:
+```
+$ sudo mount flash.bin /mnt/test  
+$ exa -alh /mnt/test
+Permissions Size User Date Modified Name
+.rwxr-xr-x  214k root 22 Okt 23:08  .ascii
+.rwxr-xr-x    65 root 22 Okt 23:08  flag.txt
+.rwxr-xr-x  9,7M root 22 Okt 23:08  secure.zip
+```
+
+Let's try and read the flag: 
+```
+$ cat /mnt/test/flag.txt
+U0lHe1MwMl9ub19wbGFpbnRleHR9CnBhc3N3b3JkOmZhZXF1dWlsOHVWYWhuZTEK
+```
+
+This looks encoded, let's try and throw it into [CyberChef](TODO) with the `Magic` block:
+![](./hardware-cyberchef.png)
+
+Oh, so it's just Base64:
+```
+SIG{S02_no_plaintext}
+password:faequuil8uVahne1
+```
+
+Nice, we got our next flag: `SIG{S02_no_plaintext}`
+
+### SPI Flash S03
+
+We can extract the zip file with the password from the previous challenge. We can search the file for flags again:
+```
+$ strings Lost\ Woods.mp3 | rg SIG
+SIG{S03_hypersecure_compression}
+```
+
+And it worked: `SIG{S03_hypersecure_compression}`
+
+###  SPI Flash S04 
+
+```
+$ exa -alh /mnt/test
+Permissions Size User Date Modified Name
+.rwxr-xr-x  214k root 22 Okt 23:08  .ascii
+.rwxr-xr-x    65 root 22 Okt 23:08  flag.txt
+.rwxr-xr-x  9,7M root 22 Okt 23:08  secure.zip
+```
+
+If you paid close attention to the output, you can see the `.ascii` file. You can open it in any text editor where you can zoom out and you'll get this image: 
+![](./ascii-output.png)
+
+Flag: `SIG{S04_I_LIKE_ASCIInema}`
+
+
 ## Reversing
 
 ### Reversing Noob
