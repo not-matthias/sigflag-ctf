@@ -358,6 +358,50 @@ http://game.sigflag.at:3002/userinfo/flag1
 
 ### A9
 
+```
+@data.get("/crypto")
+async def crypto_guess(
+        request: Request, authorize: AuthJWT = Depends(), guess: str = "base64encoded"
+):
+    """You'll get TWO flags, if you can guess the b64-signature of the flags. <br/>
+    This crypto issue wouldn't happen if we used AuthJWT properly. <br/>
+    We'll use the algo from your token. You may want to look at the source code."""
+    algo = jwt_algo(authorize, request)
+    payload = {environ["FLAG6"]: environ["FLAG2"]}
+    if jwt_signature(payload, algo) == guess:
+        return JSONResponse(list(payload.values()), 200)
+    else:
+        raise HTTPException(
+            401, "Invalid guess or algorithm. Do you know all the jwt-algorithms?"
+        )
+```
+
+```
+@data.get("/proxy/{path:path}")
+def localproxy(path: str):
+    """Yo dawg, I heard you like... <br/> Delayed for ddos protection"""
+    time.sleep(1)
+    return PlainTextResponse(requests.get("http://localhost/" + path).text)
+```
+
+```
+
+@app.exception_handler(Exception)
+def general_exception_handler(req: Request, exc: Exception):
+    """For debugging, local users should get a full stack trace"""
+    if req.client.host == "127.0.0.1":
+        try:
+            raise exc
+        except Exception:  # noqa
+            return PlainTextResponse(format_exc() + environ["FLAG9"], status_code=500)
+    else:
+        return PlainTextResponse(str(exc), 500)
+```
+
+```
+http://game.sigflag.at:3002/proxy/crypto
+```
+
 ### A10
 
 ## Misc
