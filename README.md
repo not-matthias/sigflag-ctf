@@ -470,6 +470,58 @@ http://game.sigflag.at:3002/proxy/userinfo/local
 
 ## Misc
 
+### Sudo Vim 1
+
+```
+:!cat /root/flag
+```
+
+### Sudo Vim 2
+
+```bash
+printenv # not in vim
+```
+
+### Sudo Vim 3
+
+```
+:!cat /etc/passwd
+```
+
+### Sudo Vim 4
+
+```
+:!cat /etc/shadow
+```
+
+### Sudo Vim 5
+
+```
+:!cat /etc/shadow
+```
+
+decode `U0lHe00wNS1TbGlnaHRseUIzdHRlckhpZGRlblBhc3N3b3JkfQ==` (base64)
+
+### Sudo Vim 6
+
+```
+:!cat /root/.flag
+```
+
+### Sudo Vim 7
+
+```
+:!cat /root/.encryptedflag85
+```
+
+decode ``;b9K+9e\LX6=FqH2De!H=(-ARDf8'QF*U5nE\`?^dF+"`` (base85)
+
+### Sudo Vim 8
+
+```bash
+man # not in vim
+```
+
 ## Stego
 
 ### Mysterious Git
