@@ -10,5 +10,6 @@ pkgs.mkShell {
     python39Packages.angr
     python39Packages.pwntools
     pwntools
+    gdb
   ];
 }
