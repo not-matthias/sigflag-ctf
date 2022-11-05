@@ -263,6 +263,53 @@ This script returns the flag: `SIG{1337_h4xx0r}`
 
 ## Crypto
 
+### Homemade Crypto
+
+We can connect to a server and encrypt or decrypt something. Let's try to decrypt the flag.
+```
+$ nc game.sigflag.at 3004
+What would you like to do ?
+[1] Encrypt something
+[2] Decrypt something
+[3] Shut down
+--> 2
+Please enter your encrypted message
+--> 0xbfda36fe05ae4e94fa2e9ff4ea5e655222dcef4fd5da2044f04d7d4af250
+ERROR: Refusing to decrypt flags for security reasons
+```
+
+Hmm, they detect that. Probably by comparing the decrypted output if it contains the `SIG{` prefix. Let's try and remove the leading number. 
+```
+$ nc game.sigflag.at 3004
+What would you like to do ?
+[1] Encrypt something
+[2] Decrypt something
+[3] Shut down
+--> 2
+Please enter your encrypted message
+--> 0xfda36fe05ae4e94fa2e9ff4ea5e655222dcef4fd5da2044f04d7d4af250
+Traceback (most recent call last):
+  File "/challenge.py", line 65, in <module>
+    start()
+  File "/challenge.py", line 57, in start
+    decrypt()
+  File "/challenge.py", line 37, in decrypt
+    cleartext=binascii.unhexlify(hex(decrypted)[2:])
+binascii.Error: Odd-length string
+```
+
+```
+$ nc game.sigflag.at 3004 
+What would you like to do ?
+[1] Encrypt something
+[2] Decrypt something
+[3] Shut down
+--> 2
+Please enter your encrypted message
+--> 0xda36fe05ae4e94fa2e9ff4ea5e655222dcef4fd5da2044f04d7d4af250
+Decryptio
+```
+
 ## Web
 
 ### Apache Semester 1
