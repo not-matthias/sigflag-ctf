@@ -37,7 +37,7 @@ U0lHe1MwMl9ub19wbGFpbnRleHR9CnBhc3N3b3JkOmZhZXF1dWlsOHVWYWhuZTEK
 ```
 
 This looks encoded, let's try and throw it into [CyberChef](TODO) with the `Magic` block:
-![](./hardware-cyberchef.png)
+![](./.github/images/hardware-cyberchef.png)
 
 Oh, so it's just Base64:
 ```
@@ -68,7 +68,7 @@ Permissions Size User Date Modified Name
 ```
 
 If you paid close attention to the output, you can see the `.ascii` file. You can open it in any text editor where you can zoom out and you'll get this image: 
-![](./ascii-output.png)
+![](./.github/images/ascii-output.png)
 
 Flag: `SIG{S04_I_LIKE_ASCIInema}`
 
@@ -863,26 +863,26 @@ console.log(
 
 if you assign the dark squares of the poster `1` and the light squares `0`, then this binary message translates to `The challenge is in another castle!`
 
-![](./flyer.png)
+![](./.github/images/flyer.png)
 
 ## Forensic
 
 ### Wireshark 1
 
-![wireshark 1](./wireshark-1.png)
+![wireshark 1](./.github/images/wireshark-1.png)
 
 ### Wireshark 2
 
-![wireshark 2](./wireshark-2.png)
+![wireshark 2](./.github/images/wireshark-2.png)
 
 the certificate can be parsed with CyberChef:
 
-![certificate in cyberchef](./wireshark-2-cyberchef.png)
+![certificate in cyberchef](./.github/images/wireshark-2-cyberchef.png)
 
 ### Wireshark 3
 
-![wireshark 3](./wireshark-3.png)
+![wireshark 3](./.github/images/wireshark-3.png)
 
 this string can be parsed with CyberChef:
 
-![string in cyberchef](./wireshark-3-cyberchef.png)
+![string in cyberchef](./.github/images/wireshark-3-cyberchef.png)
