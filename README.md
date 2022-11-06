@@ -527,6 +527,28 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
 
 ### A2
 
+Create a JWT-token with `alg` set to `None` in the header of the token.
+Then either write the token into the `access_token_cookie`-cookie or just send the request with the cookie set in the request
+after that just send the request: `http://game.sigflag.at:3002/crypto?guess=`
+
+```python
+@data.get("/crypto")
+async def crypto_guess(
+        request: Request, authorize: AuthJWT = Depends(), guess: str = "base64encoded"
+):
+    """You'll get TWO flags, if you can guess the b64-signature of the flags. <br/>
+    This crypto issue wouldn't happen if we used AuthJWT properly. <br/>
+    We'll use the algo from your token. You may want to look at the source code."""
+    algo = jwt_algo(authorize, request)
+    payload = {environ["FLAG6"]: environ["FLAG2"]}
+    if jwt_signature(payload, algo) == guess:
+        return JSONResponse(list(payload.values()), 200)
+    else:
+        raise HTTPException(
+            401, "Invalid guess or algorithm. Do you know all the jwt-algorithms?"
+        )
+```
+
 ### A3
 
 log in with user `FLAG3` pw `FLAG3`
@@ -616,7 +638,115 @@ async def userinfo(username: int | str, request: Request, authorize: AuthJWT = D
 
 ### A6
 
+to get `FLAG6` a token with `alg` set to `""` must be sent to: `http://game.sigflag.at:3002/crypto` the problem 
+lies with the fact that no tool for creating JWT-tokens allows `alg` to be `""` so a custom token has to be created
+
+````json
+{
+  "alg": "",
+  "typ": "JWT"
+}
+````
+```
+ewogICJhbGciOiAiIiwKICAidHlwIjogIkpXVCIKfQ
+```
+
+````json
+{
+  "sub": "test",
+  "iat": 1667718377,
+  "nbf": 1667718377,
+  "jti": "24b80158-a30d-4807-bfe7-bb0ab8e60fbe",
+  "exp": 1754031977,
+  "type": "access",
+  "fresh": false,
+  "superadmin": false
+}
+````
+```
+ewogICAgInN1YiI6ICJ0ZXN0IiwKICAgICJpYXQiOiAxNjY3NzE4Mzc3LAogICAgIm5iZiI6IDE2Njc3MTgzNzcsCiAgICAianRpIjogIjI0YjgwMTU4LWEzMGQtNDgwNy1iZmU3LWJiMGFiOGU2MGZiZSIsCiAgICAiZXhwIjogMTc1NDAzMTk3NywKICAgICJ0eXBlIjogImFjY2VzcyIsCiAgICAiZnJlc2giOiBmYWxzZSwKICAgICJzdXBlcmFkbWluIjogZmFsc2UKfQ
+
+```
+
+````
+ewogICJhbGciOiAiIiwKICAidHlwIjogIkpXVCIKfQ.ewogICAgInN1YiI6ICJ0ZXN0IiwKICAgICJpYXQiOiAxNjY3NzE4Mzc3LAogICAgIm5iZiI6IDE2Njc3MTgzNzcsCiAgICAianRpIjogIjI0YjgwMTU4LWEzMGQtNDgwNy1iZmU3LWJiMGFiOGU2MGZiZSIsCiAgICAiZXhwIjogMTc1NDAzMTk3NywKICAgICJ0eXBlIjogImFjY2VzcyIsCiAgICAiZnJlc2giOiBmYWxzZSwKICAgICJzdXBlcmFkbWluIjogZmFsc2UKfQ.ZmZiZDg5ZWM0OTBhNjMzZjM3ZjAzZjU2YmVmZWQwNGFkZDcxNGIzODVhN2JlZTE5Y2I0OWZjNzU4MjA3ODdmZg
+````
+
+```python
+from typing import Optional, Dict
+from fastapi import HTTPException
+
+import jwt
+
+
+def jwt_username(authorize, request) -> Optional[str]:
+    if cookie := request.cookies.get(authorize._access_cookie_key):  # noqa
+        return jwt.decode(cookie, options={"verify_signature": False})["sub"]
+
+
+def jwt_algo(authorize, request) -> Optional[str]:
+    if cookie := request.cookies.get(authorize._access_cookie_key):  # noqa
+        return jwt.get_unverified_header(cookie)["alg"]
+    else:
+        raise ValueError("No jwt or alg")
+
+
+def jwt_signature(payload: Dict, algo: str) -> Optional[bytes]:
+    if algo == "":
+        raise HTTPException(status_code=418, detail=list(payload.keys()))
+    tok = jwt.encode(payload, "", algorithm=algo).decode()
+    return tok.split(".")[2]
+```
+
+```python
+@data.get("/crypto")
+async def crypto_guess(
+        request: Request, authorize: AuthJWT = Depends(), guess: str = "base64encoded"
+):
+    """You'll get TWO flags, if you can guess the b64-signature of the flags. <br/>
+    This crypto issue wouldn't happen if we used AuthJWT properly. <br/>
+    We'll use the algo from your token. You may want to look at the source code."""
+    algo = jwt_algo(authorize, request)
+    payload = {environ["FLAG6"]: environ["FLAG2"]}
+    if jwt_signature(payload, algo) == guess:
+        return JSONResponse(list(payload.values()), 200)
+    else:
+        raise HTTPException(
+            401, "Invalid guess or algorithm. Do you know all the jwt-algorithms?"
+        )
+```
+
 ### A7
+
+login with name: `test`: pwd:`test` and get the JWT-token from storage and change `superadmin` to `true`
+then just get the userinfo from `admin`: `http://game.sigflag.at:3002/userinfo/admin` with the token 
+
+```python
+class Settings(BaseModel):
+    authjwt_secret_key: str = environ.get("SECRET", "SECRET")  # don't forget to set this in prod, lol
+    authjwt_token_location: set = {"cookies"}
+    authjwt_cookie_csrf_protect: bool = False
+    authjwt_access_token_expires: int = timedelta(days=999)
+```
+
+```python
+@data.get("/userinfo/{username}")
+async def userinfo(username: int | str, request: Request, authorize: AuthJWT = Depends()):
+    if username == "admin":
+        authorize.jwt_required()  # protect the admins!
+        if authorize.get_raw_jwt().get("superadmin", False):
+            return {"I thought we disabled this feature": environ["FLAG7"]}
+    if username == "local":
+        if not request.client.host == "127.0.0.1":
+            raise HTTPException(401, "You are not localhost")
+    if not (password := users[username]):
+        return {
+            "Will you stop having an invalid password if I give you a flag?": environ[
+                "FLAG8"
+            ]
+        }
+    return {"name": username, "pass": password}
+```
 
 ### A8
 
